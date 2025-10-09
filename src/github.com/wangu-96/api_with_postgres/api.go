@@ -16,6 +16,10 @@ func init() {
 func main() {
 	r := gin.Default()
 
+	//User routes
+	r.POST("/users", controllers.UsersCreate)
+
+	//Post routes
 	r.POST("/post", controllers.PostsCreate)
 	r.GET("/posts", controllers.PostIndex)
 	r.GET("/posts/:id", controllers.ShowPost)
