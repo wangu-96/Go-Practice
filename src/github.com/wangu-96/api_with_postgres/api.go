@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/wangu-96/controllers"
 	"github.com/wangu-96/initializers"
+	"github.com/wangu-96/middleware"
 )
 
 func init() {
@@ -19,15 +20,21 @@ func main() {
 	//User routes
 	r.POST("/users", controllers.UsersCreate)
 
-	//Post routes
-	r.POST("/post", controllers.PostsCreate)
-	r.GET("/posts", controllers.PostIndex)
-	r.GET("/posts/:id", controllers.ShowPost)
-	r.PUT("/posts/:id", controllers.UpdatePost)
-	r.DELETE("/posts/:id", controllers.DeletePost)
+	protected := r.Group("/")
+	protected.Use(middleware.RequireAuth())
+	{
 
-	log.Println("Server running at http://localhost:3000")
+		//Post routes
+		r.POST("/post", controllers.PostsCreate)
+		r.GET("/posts", controllers.PostIndex)
+		r.GET("/posts/:id", controllers.ShowPost)
+		r.PUT("/posts/:id", controllers.UpdatePost)
+		r.DELETE("/posts/:id", controllers.DeletePost)
 
-	r.Run(":3000") // listen and serve on
+		log.Println("Server running at http://localhost:3000")
+
+		r.Run(":3000") // listen and serve on
+
+	}
 
 }
