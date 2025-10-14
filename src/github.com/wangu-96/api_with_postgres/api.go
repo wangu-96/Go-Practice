@@ -19,6 +19,7 @@ func main() {
 
 	//User routes
 	r.POST("/users", controllers.UsersCreate)
+	r.GET("/login", controllers.UsersLogin)
 
 	protected := r.Group("/")
 	protected.Use(middleware.RequireAuth())
@@ -31,10 +32,8 @@ func main() {
 		r.PUT("/posts/:id", controllers.UpdatePost)
 		r.DELETE("/posts/:id", controllers.DeletePost)
 
-		log.Println("Server running at http://localhost:3000")
-
-		r.Run(":3000") // listen and serve on
-
 	}
+	log.Println("Server running at http://localhost:3000")
 
+	r.Run(":3000") // listen and serve on
 }

@@ -16,7 +16,6 @@ func RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Expect "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(401, gin.H{"error": "Invalid Authorization header"})
@@ -25,13 +24,17 @@ func RequireAuth() gin.HandlerFunc {
 		}
 
 		token := parts[1]
-		if err := JWT.VerifyToken(token); err != nil {
+		claims, err := JWT.VerifyToken(token)
+		if err != nil {
 			c.JSON(401, gin.H{"error": "Invalid or expired token"})
 			c.Abort()
 			return
 		}
 
-		// Token is valid, continue
+		// Set user_id and email into the context for later use
+		c.Set("user_id", uint(claims["user_id"].(float64)))
+		c.Set("email", claims["email"].(string))
+
 		c.Next()
 	}
 }

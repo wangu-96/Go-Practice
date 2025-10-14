@@ -43,7 +43,7 @@ func UsersCreate(c *gin.Context) {
 	}
 
 	// ✅ Generate JWT token
-	token, err := JWT.CreateToken(user.Email)
+	token, err := JWT.CreateToken(user.ID, user.Email)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to generate token"})
 		return
@@ -52,6 +52,51 @@ func UsersCreate(c *gin.Context) {
 	// Respond with user and token
 	c.JSON(200, gin.H{
 		"message": "User created successfully",
+		"user": gin.H{
+			"id":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
+		},
+		"token": token,
+	})
+}
+
+func UsersLogin(c *gin.Context) {
+	var body struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// Bind JSON input
+	if err := c.BindJSON(&body); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find the user by email
+	var user models.User
+	if err := initializers.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	// Compare the provided password with the hashed password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
+		c.JSON(500, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	// Generate JWT token
+	token, err := JWT.CreateToken(user.ID, user.Email)
+	if err != nil {
+		log.Println("Token generation error:", err)
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// Respond with token and user info
+	c.JSON(200, gin.H{
+		"message": "Login successful",
 		"user": gin.H{
 			"id":    user.ID,
 			"name":  user.Name,
