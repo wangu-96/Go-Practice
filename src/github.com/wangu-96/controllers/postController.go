@@ -8,6 +8,7 @@ import (
 	"github.com/wangu-96/models"
 )
 
+// creates a logged in users post (tested and working)
 func PostsCreate(c *gin.Context) {
 	// 1. Get the authenticated user's ID from context
 	userIDInterface, exists := c.Get("user_id")
@@ -49,19 +50,26 @@ func PostsCreate(c *gin.Context) {
 }
 
 func PostIndex(c *gin.Context) {
+	// Get the currently logged-in user ID (assuming it's stored in context by middleware)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
 
-	var posts = []models.Post{}
-	result := initializers.DB.Find(&posts)
+	var posts []models.Post
+	result := initializers.DB.Where("user_id = ?", userID).Find(&posts)
 
 	if result.Error != nil {
-		log.Fatal(result.Error)
+		log.Println(result.Error)
+		c.JSON(500, gin.H{"error": "Failed to fetch posts"})
+		return
 	}
 
 	c.JSON(200, gin.H{
 		"message": "Posts fetched successfully",
 		"posts":   posts,
 	})
-
 }
 
 func ShowPost(c *gin.Context) {

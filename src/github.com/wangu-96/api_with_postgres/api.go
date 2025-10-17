@@ -21,16 +21,19 @@ func main() {
 	r.POST("/users", controllers.UsersCreate)
 	r.GET("/login", controllers.UsersLogin)
 
+	//This is just to test getting a token for conference call api
+	r.GET("/livekit/token", controllers.GetLiveKitJoinToken)
+
 	protected := r.Group("/")
 	protected.Use(middleware.RequireAuth())
 	{
 
 		//Post routes
-		r.POST("/post", controllers.PostsCreate)
-		r.GET("/posts", controllers.PostIndex)
-		r.GET("/posts/:id", controllers.ShowPost)
-		r.PUT("/posts/:id", controllers.UpdatePost)
-		r.DELETE("/posts/:id", controllers.DeletePost)
+		protected.POST("/post", controllers.PostsCreate)
+		protected.GET("/posts", controllers.PostIndex)
+		protected.GET("/posts/:id", controllers.ShowPost)
+		protected.PUT("/posts/:id", controllers.UpdatePost)
+		protected.DELETE("/posts/:id", controllers.DeletePost)
 
 	}
 	log.Println("Server running at http://localhost:3000")
